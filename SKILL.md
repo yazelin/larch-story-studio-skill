@@ -125,7 +125,11 @@ Preview:
 Publishing — outward facing, explicit request only:
 
 - `larch_list_published()`: this account's marketplace listings with views, plays, likes and unanswered comments. Call it first to know whether a project is already listed.
-- `larch_publish_game(projectId, title?, description?, coverUrl?, tags?, remixable?)`: lists the project on the marketplace, or — when it is already listed — republishes it so players get the current board. One project has exactly one listing, so "上架" and "更新版本" are the same call. Omitted fields keep the previous listing's values. Preview the game first; a broken route reaches real players.
+- `larch_publish_game(projectId, title?, description?, coverUrl?, tags?, remixable?, version?, updateNote?, aiDisclosure?)`: lists the project on the marketplace, or — when it is already listed — republishes it so players get the current board. One project has exactly one listing, so "上架" and "更新版本" are the same call. Omitted fields keep the previous listing's values. Preview the game first; a broken route reaches real players.
+  - `version` and `updateNote` (the release note, ≤2000 chars) go in the same call; do not reach for `larch_upsert_release_note`, that one is Larch's own site changelog and admin-only.
+  - The first publish of a project is refused until `aiDisclosure` is set. It is an object, `{"mode":"heavy"}` for heavy use (the format other listings already carry). Ask the user what to disclose, never guess. The MCP tool schema some clients cache omits this field and sends it as a string, which fails validation; in that case call `tools/call` over raw JSON-RPC to `https://larch.ink/mcp` (Bearer key, `initialize` first, ~30s per call).
+  - Every call is a new release (`releaseNumber` +1) even with the same version. Run it exactly once; never re-run a publish script to "check".
+  - To change only the store page (description, cover, remix, AI disclosure, screenshots) without a new version or follower notification, use the tool/button for "only update store info" instead of republishing.
 - `larch_unpublish_game(projectId)`: removes the listing. Player links break and the listing's stats are gone for good.
 - `larch_share_link(projectId, permission)`: a durable public `/play` URL (and read-only `/share` board URL) to hand to other people. Calling it again refreshes the same URL with the current project. This is not the preview link.
 
